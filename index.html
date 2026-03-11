@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoT Energy Dashboard</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 50px; }
+        .container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+        .card { background: white; border-radius: 15px; padding: 25px; width: 250px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); text-align: center; border-top: 5px solid #007bff; }
+        .card.watt { border-top-color: #28a745; }
+        h2 { color: #555; font-size: 1.2rem; margin-bottom: 10px; }
+        .value { font-size: 2.5rem; font-weight: bold; color: #333; }
+        .unit { font-size: 1rem; color: #888; }
+        .status { margin-top: 20px; font-size: 0.8rem; color: #28a745; }
+    </style>
+</head>
+<body>
+
+    <h1>Monitoring Energi Listrik</h1>
+    <p>Data diperbarui secara real-time dari Firebase</p>
+
+    <div class="container">
+        <div class="card">
+            <h2>Tegangan</h2>
+            <div id="voltage-val" class="value">0</div>
+            <div class="unit">Volt (V)</div>
+        </div>
+
+        <div class="card watt">
+            <h2>Daya</h2>
+            <div id="power-val" class="value">0</div>
+            <div class="unit">Watt (W)</div>
+        </div>
+    </div>
+
+    <div id="connection-status" class="status">Menghubungkan ke database...</div>
+
+    <script>
+        // KONFIGURASI FIREBASE (URL Database Anda)
+        const firebaseConfig = {
+            databaseURL: "https://kontrol-manajemen-energi-default-rtdb.firebaseio.com/"
+        };
+
+        // Inisialisasi Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Referensi ke path 'pembacaan' (harus sama dengan kode ESP32)
+        const dbRef = database.ref('pembacaan');
+
+        // Fungsi untuk mengambil data setiap kali ada perubahan di Firebase
+        dbRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById('voltage-val').innerText = data.volt;
+                document.getElementById('power-val').innerText = data.watt;
+                document.getElementById('connection-status').innerText = "Terhubung: Data Terupdate!";
+            }
+        }, (error) => {
+            document.getElementById('connection-status').innerText = "Error: " + error.message;
+            document.getElementById('connection-status').style.color = "red";
+        });
+    </script>
+</body>
+</html>
